@@ -1,15 +1,15 @@
 package com.dreamteam.banking;
 
-import java.util.Date;
-
 import com.dreamteam.jellyblock.JellyBlock;
+import com.dreamteam.jellyblock.JellyHelper;
 
 public class Transactor {
 	
 	public static String transactionCreate(Account sender, Account receiver, double amount) {
 		//Create a new transaction with the format of "Acnt#:senderAcnt# -> amount Acnt#receieverAcnt# @ txTime"
-			long newTransactionTime = new Date().getTime();
-			String newTransaction = "Acnt#:" + sender.getAccountNumber() + " sending $" + amount + " -> " + "Acnt#:" + receiver.getAccountNumber() + " @ " + newTransactionTime;
+			String newTransactionTime = JellyHelper.giveDateString();
+			String newTransaction = "\n| ACCNT#:[" + sender.getAccountNumber() + "] PK:[" + JellyHelper.getStringFromKey(sender.getPublicKey()) + "\n - SENDING  $" + amount + 
+					" TO - \nACCNT#:[" + receiver.getAccountNumber() +"] PK:[" + JellyHelper.getStringFromKey(receiver.getPublicKey()) + "]\n@\n" + newTransactionTime + " |\n";
 			sender.setBalance(sender.getBalance() - amount);
 			receiver.setBalance(receiver.getBalance() + amount);
 			System.out.println("Transaction succeeded! Transaction -> " + newTransaction);
@@ -40,7 +40,7 @@ public class Transactor {
 	public static void attemptTransaction(Account sender, Account receiver, double amount) {
 		//Attempt to do the transaction based on the senders balance
 		if (verifyTransaction(sender, receiver, amount)) {
-			JellyBlock block = new JellyBlock(JellyBlock.currentBlock.getHash(), transactionCreate(receiver, sender, amount));
+			JellyBlock block = new JellyBlock(JellyBlock.currentBlock.getHash(), transactionCreate(receiver, sender, amount), sender, receiver);
 			JellyBlock.currentBlock = block;
 		}
 	}

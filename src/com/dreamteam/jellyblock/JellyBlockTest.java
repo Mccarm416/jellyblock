@@ -4,9 +4,13 @@ import com.dreamteam.banking.Account;
 import com.dreamteam.banking.Transactor;
 import com.dreamteam.banking.User;
 
+import java.security.Security;
+
+
 public class JellyBlockTest {
 
 	public static void main(String[] args) {
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 		
 		//Instantiate users and accounts
 		System.out.println("Creating user 'David Stone' with 2 accounts of a balance of $500 and $750");
@@ -21,7 +25,7 @@ public class JellyBlockTest {
 		user2.addAccount(account);
 		account = new Account(320.50);
 		user2.addAccount(account);
-		//Instantiate the genesis block
+		//Instantiate the Genesis block
 		@SuppressWarnings("unused")
 		JellyBlock genesisBlock = new JellyBlock();
 		JellyBlock.displayCurrentBlockInfo();

@@ -1,21 +1,30 @@
 package com.dreamteam.jellyblock;
 
-import java.util.Date;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
+import com.dreamteam.banking.Account;
 
 public class JellyBlock {
 	private String hash;
 	private String previousHash;
+	private PublicKey senderKey;
+	private PublicKey receiverKey;
 	private String transaction;
-	private long timeStamp;
+	private String timeStamp;
+	public byte[] signature;
 	public static int blockChainSize = 0;
 	public static JellyBlock currentBlock;
 
 	//Basic JellyBlock constructor
-	public JellyBlock(String previousHash, String transaction) {
+	public JellyBlock(String previousHash, String transaction, Account sender, Account receiver) {
 			this.transaction = transaction;
 			this.previousHash = previousHash;
-			this.hash = StringHasher.calculateHash(previousHash, transaction);
-			timeStamp = new Date().getTime();
+			this.hash = JellyHelper.calculateHash(previousHash, transaction);
+			senderKey = sender.getPublicKey();
+			receiverKey = receiver.getPublicKey();
+			timeStamp = JellyHelper.giveDateString();
+			generateSignature(sender.getPrivateKey());
 			blockChainSize++;
 	}
 
@@ -24,8 +33,11 @@ public class JellyBlock {
 		if (blockChainSize == 0) {
 		//Instantiate the genesis block
 		System.out.println("Creating genesis block...");
+		Account adam = new Account(0.00);
+		Account eve = new Account(0.00);
+
 		JellyBlock genesisBlock = new JellyBlock("In the beginning when God created the heavens and the earth,", 
-				"the earth was a formless void and darkness covered the face of the deep, while a wind from God swept over the face of the waters.");
+				"the earth was a formless void and darkness covered the face of the deep, while a wind from God swept over the face of the waters.", adam, eve);
 		currentBlock = genesisBlock;
 		}
 		else {
@@ -33,7 +45,7 @@ public class JellyBlock {
 		}
 	}
 
-	public long getTimeStamp() {
+	public String getTimeStamp() {
 		return timeStamp;
 	}
 
@@ -49,9 +61,27 @@ public class JellyBlock {
 		return transaction;
 	}
 	
+	public byte[] getSignature() {
+		return signature;
+	}
+
+	public static JellyBlock getCurrentBlock() {
+		return currentBlock;
+	}
+
+	private void generateSignature(PrivateKey senderPrivateKey) {
+		String data = JellyHelper.getStringFromKey(senderKey) + JellyHelper.getStringFromKey(receiverKey) + transaction;
+		signature = JellyHelper.applyECDSASig(senderPrivateKey,data);		
+	}
+	public boolean verifiySignature() {
+		String data = JellyHelper.getStringFromKey(senderKey) + JellyHelper.getStringFromKey(receiverKey) + transaction;
+		return JellyHelper.verifyECDSASig(senderKey, data, signature);
+	}
 	public static void displayCurrentBlockInfo() {
         System.out.println("Current block previous hash -> " + currentBlock.getPreviousHash());
 		System.out.println("Current block hash -> " + currentBlock.getHash());
 	}
+	
+
 	
 }
